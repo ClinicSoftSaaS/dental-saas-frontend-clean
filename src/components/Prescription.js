@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addPrescription } from "../api";
+import { addPrescription, getPrescriptions } from "../api";
 
 export default function Prescription({ patients = [] }) {
   const [form, setForm] = useState({
@@ -9,6 +9,12 @@ export default function Prescription({ patients = [] }) {
     notes: ""
   });
 
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // =========================
+  // SAVE PRESCRIPTION
+  // =========================
   const handleSubmit = async () => {
     if (!form.patient_id || !form.medicines) {
       alert("Patient and Medicines are required");
@@ -16,6 +22,8 @@ export default function Prescription({ patients = [] }) {
     }
 
     try {
+      setLoading(true);
+
       await addPrescription({
         patient_id: Number(form.patient_id),
         doctor_id: Number(form.doctor_id),
@@ -30,15 +38,41 @@ export default function Prescription({ patients = [] }) {
         medicines: "",
         notes: ""
       });
+
     } catch (err) {
-      alert("Failed to save prescription");
+      alert(err.message || "Failed to save prescription");
       console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =========================
+  // LOAD PRESCRIPTIONS
+  // =========================
+  const loadPrescriptions = async () => {
+    if (!form.patient_id) {
+      alert("Select patient first");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await getPrescriptions(form.patient_id);
+
+      setList(res.data || []);
+
+    } catch (err) {
+      alert(err.message || "Failed to load prescriptions");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Add Prescription</h2>
+      <h2 style={styles.title}>Prescription</h2>
 
       {/* Patient Select */}
       <select
@@ -47,17 +81,21 @@ export default function Prescription({ patients = [] }) {
         onChange={(e) => setForm({ ...form, patient_id: e.target.value })}
       >
         <option value="">Select Patient</option>
-        {patients.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name} ({p.phone})
-          </option>
-        ))}
+        {patients.length === 0 ? (
+          <option disabled>No patients available</option>
+        ) : (
+          patients.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name} ({p.phone})
+            </option>
+          ))
+        )}
       </select>
 
       {/* Medicines */}
       <textarea
         style={styles.textarea}
-        placeholder="Enter Medicines (e.g. Paracetamol 500mg - 2 times a day)"
+        placeholder="Medicines (e.g. Panadol 500mg twice daily)"
         value={form.medicines}
         onChange={(e) => setForm({ ...form, medicines: e.target.value })}
       />
@@ -70,20 +108,60 @@ export default function Prescription({ patients = [] }) {
         onChange={(e) => setForm({ ...form, notes: e.target.value })}
       />
 
-      <button style={styles.btn} onClick={handleSubmit}>
-        Save Prescription
-      </button>
+      {/* Buttons */}
+      <div style={{ display: "flex", gap: "10px" }}>
+        <button style={styles.btn} onClick={handleSubmit} disabled={loading}>
+          Save
+        </button>
+
+        <button style={styles.btnSecondary} onClick={loadPrescriptions} disabled={loading}>
+          Load History
+        </button>
+      </div>
+
+      <hr style={{ margin: "20px 0" }} />
+
+      {/* HISTORY TABLE */}
+      <h3>Prescription History</h3>
+
+      {list.length === 0 ? (
+        <p>No prescriptions found</p>
+      ) : (
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Medicines</th>
+              <th>Notes</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((p) => (
+              <tr key={p.id}>
+                <td>{p.id}</td>
+                <td>{p.medicines}</td>
+                <td>{p.notes}</td>
+                <td>{new Date(p.date).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
 
+// =========================
+// STYLES
+// =========================
 const styles = {
   container: {
     background: "#fff",
     padding: "20px",
     borderRadius: "10px",
     boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-    maxWidth: "600px"
+    maxWidth: "700px"
   },
 
   title: {
@@ -125,5 +203,19 @@ const styles = {
     border: "none",
     borderRadius: "6px",
     cursor: "pointer"
+  },
+
+  btnSecondary: {
+    background: "#16a34a",
+    color: "#fff",
+    padding: "10px 15px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer"
+  },
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse"
   }
 };

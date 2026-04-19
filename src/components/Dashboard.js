@@ -52,7 +52,20 @@ export default function Dashboard() {
     }
   };
 
-  const handleAddPatient = async () => {
+ const handleAddPatient = async () => {
+  if (!patientForm.name || !patientForm.phone) {
+    alert("Name and phone required");
+    return;
+  }
+
+  // ✅ prevent duplicate phone
+  const exists = patients.find(p => p.phone === patientForm.phone);
+  if (exists) {
+    alert("Patient with this phone already exists");
+    return;
+  }
+
+  try {
     await addPatient({
       name: patientForm.name,
       phone: patientForm.phone,
@@ -61,9 +74,19 @@ export default function Dashboard() {
 
     setPatientForm({ name: "", phone: "", age: "" });
     loadData();
-  };
+
+  } catch (err) {
+    alert(err.message || "Failed to add patient");
+  }
+};
 
   const handleAddAppointment = async () => {
+  if (!appointmentForm.patient_id || !appointmentForm.date) {
+    alert("Select patient and date");
+    return;
+  }
+
+  try {
     await addAppointment({
       patient_id: Number(appointmentForm.patient_id),
       doctor_id: Number(doctorId),
@@ -72,7 +95,11 @@ export default function Dashboard() {
 
     setAppointmentForm({ patient_id: "", date: "" });
     loadData();
-  };
+
+  } catch (err) {
+    alert(err.message || "Failed to add appointment");
+  }
+};
 
   const filteredAppointments = searchPatientId
     ? appointments.filter(a => a.patient_id === Number(searchPatientId))

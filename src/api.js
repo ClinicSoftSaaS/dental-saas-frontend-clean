@@ -49,6 +49,7 @@ export const addAppointment = (data) =>
   });
 
 // PRESCRIPTIONS
+// PRESCRIPTIONS
 export const addPrescription = (data) =>
   request(`${API}/api/prescriptions/`, {
     method: "POST",
@@ -57,8 +58,8 @@ export const addPrescription = (data) =>
   });
 
 export const getPrescriptions = (id) =>
-  request(`${API}/api/prescriptions/${id}`);
-
-// SEARCH
-export const searchPatientByPhone = (phone) =>
+  request(`${API}/api/prescriptions/patient/${id}`);
+  export const searchPatientByPhone = (phone) =>
   request(`${API}/api/patients/search/phone/${phone}`);
+  export const getPatientHistory = (id) =>
+  request(`${API}/api/patients/history/${id}`);
