@@ -58,7 +58,7 @@ export const addPrescription = (data) =>
   });
 
 export const getPrescriptions = (id) =>
-  request(`${API}/api/prescriptions/patient/${id}`);
+  request(`${API}/api/prescriptions/${id}`);
   export const searchPatientByPhone = (phone) =>
   request(`${API}/api/patients/search/phone/${phone}`);
   export const getPatientHistory = (id) =>
