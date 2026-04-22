@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { addPrescription, getPrescriptions } from "../api.js";
 
