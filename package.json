@@ -14,14 +14,17 @@
     "preview": "vite preview"
   },
 
-  "devDependencies": {
-  "@vitejs/plugin-react": "4.3.1",
-  "vite": "5.4.10",
-  "rollup": "4.18.0"
-},
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.14.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1"
+  },
 
   "devDependencies": {
     "@vitejs/plugin-react": "4.3.1",
-    "vite": "5.4.10"
+    "vite": "5.4.10",
+    "rollup": "4.18.0"
   }
 }

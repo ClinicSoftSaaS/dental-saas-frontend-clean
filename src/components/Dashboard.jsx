@@ -4,7 +4,7 @@ import {
   addPatient,
   getAppointments,
   addAppointment
-} from "../api";
+} from "../api.js";
 
 import Sidebar from "./Sidebar";
 import Search from "./Search";

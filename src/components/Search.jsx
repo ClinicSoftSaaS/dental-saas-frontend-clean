@@ -3,7 +3,7 @@ import {
  searchPatientByPhone,
  getAppointments,
  getPrescriptions
-} from "../api";
+} from "../api.js";
 
 
 export default function Search() {

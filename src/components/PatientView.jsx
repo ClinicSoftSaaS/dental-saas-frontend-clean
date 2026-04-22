@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAppointments } from "../api";
+import { getAppointments } from "../api.js";
 
 export default function PatientView() {
   const [appointments, setAppointments] = useState([]);
