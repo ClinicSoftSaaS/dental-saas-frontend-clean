@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { addPrescription, getPrescriptions } from "../api.js";
 
 export default function Prescription({ patients = [] }) {
