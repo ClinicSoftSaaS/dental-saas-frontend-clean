@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getAppointments } from "../api.js";
 
 export default function PatientView() {

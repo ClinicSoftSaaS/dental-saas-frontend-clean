@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getPatients, addAppointment } from "../api";
 
 export default function AddAppointment() {
