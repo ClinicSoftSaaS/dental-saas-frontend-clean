@@ -9,15 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^4.3.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-router-dom": "6.22.3",
-    "rollup": "^4.60.2"
-  },
-  "devDependencies": {
-    "vite": "^8.0.10"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.26.2",
+    "rollup": "^4.60.2",
+    "vite": "^5.4.10"
   }
 }
