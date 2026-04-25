@@ -1,67 +1,44 @@
-import React from "react";
 export default function Sidebar({ setPage }) {
   return (
-    <div style={styles.sidebar}>
-      <h2 style={styles.title}>🦷 Dental SaaS</h2>
+    <div style={{
+      width: "220px",
+      background: "#2c3e50",
+      color: "white",
+      height: "100vh",
+      padding: "20px"
+    }}>
 
-      <div style={styles.menu}>
+      <h2 style={{ marginBottom: "20px" }}>ClinicSoft</h2>
 
-        <button style={styles.button} onClick={() => setPage("dashboard")}>
-          Dashboard
-        </button>
+      <button style={btn} onClick={() => setPage("dashboard")}>
+        Dashboard
+      </button>
 
-        <button style={styles.button} onClick={() => setPage("patients")}>
-          Patients
-        </button>
+      <button style={btn} onClick={() => setPage("patients")}>
+        Patients
+      </button>
 
-        <button style={styles.button} onClick={() => setPage("appointments")}>
-          Appointments
-        </button>
+      <button style={btn} onClick={() => setPage("appointments")}>
+        Appointments
+      </button>
 
-        <button style={styles.button} onClick={() => setPage("search")}>
-          Search
-        </button>
+      <button style={btn} onClick={() => setPage("prescription")}>
+        Prescription
+      </button>
 
-        <button style={styles.button} onClick={() => setPage("prescription")}>
-          Prescription
-        </button>
-
-      </div>
+      <button style={btn} onClick={() => setPage("search")}>
+        Search
+      </button>
     </div>
   );
 }
 
-const styles = {
-  sidebar: {
-    width: "260px",
-    minHeight: "100vh",
-    backgroundColor: "#4c1d95", // purple (like your old UI)
-    color: "white",
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-  },
-
-  title: {
-    fontSize: "22px",
-    fontWeight: "bold",
-    marginBottom: "30px",
-  },
-
-  menu: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-
-  button: {
-    textAlign: "left",
-    padding: "10px",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    backgroundColor: "white",
-    color: "#4c1d95",
-    fontWeight: "600",
-  },
+const btn = {
+  width: "100%",
+  padding: "10px",
+  margin: "5px 0",
+  background: "transparent",
+  color: "white",
+  border: "1px solid rgba(255,255,255,0.2)",
+  cursor: "pointer"
 };

@@ -1,50 +1,33 @@
-import React from "react";
-import { useState } from "react";
-import { addPrescription, getPrescriptions } from "../api.js";
+import { useEffect, useState } from "react";
+import { getPatients } from "../api/api";
 
-export default function Prescription({ patients = [] }) {
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+export default function Prescription() {
+  const [patients, setPatients] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
+
   const [form, setForm] = useState({
     patient_id: "",
-    doctor_id: localStorage.getItem("userId") || "",
     medicines: "",
     notes: ""
   });
 
-  const [list, setList] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // =========================
+  // USER (DOCTOR)
+  // =========================
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const doctorId = user?.id;
 
   // =========================
-  // SAVE PRESCRIPTION
+  // LOAD PATIENTS
   // =========================
-  const handleSubmit = async () => {
-    if (!form.patient_id || !form.medicines) {
-      alert("Patient and Medicines are required");
-      return;
-    }
-
+  const loadPatients = async () => {
     try {
-      setLoading(true);
-
-      await addPrescription({
-        patient_id: Number(form.patient_id),
-        doctor_id: Number(form.doctor_id),
-        medicines: form.medicines,
-        notes: form.notes
-      });
-
-      alert("Prescription saved successfully!");
-
-      setForm({
-        ...form,
-        medicines: "",
-        notes: ""
-      });
-
+      const res = await getPatients();
+      setPatients(Array.isArray(res) ? res : []);
     } catch (err) {
-      alert(err.message || "Failed to save prescription");
-      console.log(err);
-    } finally {
-      setLoading(false);
+      console.log("Patients error:", err);
     }
   };
 
@@ -52,171 +35,203 @@ export default function Prescription({ patients = [] }) {
   // LOAD PRESCRIPTIONS
   // =========================
   const loadPrescriptions = async () => {
-    if (!form.patient_id) {
-      alert("Select patient first");
+    try {
+      const res = await fetch(`${BASE_URL}/api/prescriptions`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch prescriptions");
+      }
+
+      const data = await res.json();
+      setPrescriptions(Array.isArray(data) ? data : []);
+
+    } catch (err) {
+      console.log("Prescriptions error:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadPatients();
+    loadPrescriptions();
+  }, []);
+
+  // =========================
+  // ADD PRESCRIPTION
+  // =========================
+  const handleSubmit = async () => {
+    if (!form.patient_id || !form.medicines) {
+      alert("Please select patient and enter medicines");
       return;
     }
 
+    if (!doctorId) {
+      alert("Doctor not found. Please login again.");
+      return;
+    }
+
+    const payload = {
+      patient_id: Number(form.patient_id),
+      doctor_id: Number(doctorId),
+      medicines: form.medicines,
+      notes: form.notes
+    };
+
     try {
-      setLoading(true);
+      const res = await fetch(`${BASE_URL}/api/prescriptions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
-      const res = await getPrescriptions(form.patient_id);
+      const data = await res.json();
 
-      setList(res.data || []);
+      if (!res.ok) {
+        console.log("ERROR:", data);
+        alert(data.detail || "Failed to save prescription");
+        return;
+      }
+
+      alert("Prescription saved successfully ✔");
+
+      // RESET FORM
+      setForm({
+        patient_id: "",
+        medicines: "",
+        notes: ""
+      });
+
+      // RELOAD LIST
+      loadPrescriptions();
 
     } catch (err) {
-      alert(err.message || "Failed to load prescriptions");
-    } finally {
-      setLoading(false);
+      console.log("Server error:", err);
+      alert("Server error");
     }
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Prescription</h2>
+    <div style={{ padding: "20px" }}>
 
-      {/* Patient Select */}
-      <select
-        style={styles.input}
-        value={form.patient_id}
-        onChange={(e) => setForm({ ...form, patient_id: e.target.value })}
-      >
-        <option value="">Select Patient</option>
-        {patients.length === 0 ? (
-          <option disabled>No patients available</option>
-        ) : (
-          patients.map((p) => (
+      <h2>💊 Prescriptions</h2>
+
+      {/* ================= FORM ================= */}
+      <div style={{
+        padding: "15px",
+        background: "#f4f6f8",
+        borderRadius: "10px",
+        marginBottom: "20px"
+      }}>
+
+        <h3>Add Prescription</h3>
+
+        {/* PATIENT DROPDOWN */}
+        <select
+          value={form.patient_id}
+          onChange={(e) =>
+            setForm({ ...form, patient_id: e.target.value })
+          }
+        >
+          <option value="">Select Patient</option>
+
+          {patients.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name} ({p.phone})
+              {p.name} - {p.phone}
             </option>
-          ))
-        )}
-      </select>
+          ))}
+        </select>
 
-      {/* Medicines */}
-      <textarea
-        style={styles.textarea}
-        placeholder="Medicines (e.g. Panadol 500mg twice daily)"
-        value={form.medicines}
-        onChange={(e) => setForm({ ...form, medicines: e.target.value })}
-      />
+        <br /><br />
 
-      {/* Notes */}
-      <textarea
-        style={styles.textareaSmall}
-        placeholder="Notes / Instructions"
-        value={form.notes}
-        onChange={(e) => setForm({ ...form, notes: e.target.value })}
-      />
+        {/* MEDICINES */}
+        <input
+          placeholder="Medicines"
+          value={form.medicines}
+          onChange={(e) =>
+            setForm({ ...form, medicines: e.target.value })
+          }
+          style={{
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px"
+          }}
+        />
 
-      {/* Buttons */}
-      <div style={{ display: "flex", gap: "10px" }}>
-        <button style={styles.btn} onClick={handleSubmit} disabled={loading}>
-          Save
-        </button>
+        {/* NOTES */}
+        <textarea
+          placeholder="Notes"
+          value={form.notes}
+          onChange={(e) =>
+            setForm({ ...form, notes: e.target.value })
+          }
+          style={{
+            width: "100%",
+            padding: "10px",
+            height: "80px"
+          }}
+        />
 
-        <button style={styles.btnSecondary} onClick={loadPrescriptions} disabled={loading}>
-          Load History
+        <br /><br />
+
+        <button
+          onClick={handleSubmit}
+          style={{
+            padding: "10px 15px",
+            background: "#2c3e50",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer"
+          }}
+        >
+          ➕ Save Prescription
         </button>
       </div>
 
-      <hr style={{ margin: "20px 0" }} />
+      {/* ================= LIST ================= */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+        gap: "15px"
+      }}>
+        {prescriptions.length === 0 ? (
+          <p>No prescriptions found</p>
+        ) : (
+          prescriptions.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                background: "linear-gradient(135deg, #2c3e50, #34495e)",
+                color: "white",
+                padding: "15px",
+                borderRadius: "12px"
+              }}
+            >
+              <h3>💊 Prescription #{p.id}</h3>
 
-      {/* HISTORY TABLE */}
-      <h3>Prescription History</h3>
+              <p>👤 Patient ID: {p.patient_id}</p>
+              <p>🧑‍⚕️ Doctor ID: {p.doctor_id}</p>
 
-      {list.length === 0 ? (
-        <p>No prescriptions found</p>
-      ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Medicines</th>
-              <th>Notes</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.map((p) => (
-              <tr key={p.id}>
-                <td>{p.id}</td>
-                <td>{p.medicines}</td>
-                <td>{p.notes}</td>
-                <td>{new Date(p.date).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+              <div style={{
+                marginTop: "10px",
+                padding: "8px",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.1)"
+              }}>
+                💊 {p.medicines}
+              </div>
+
+              {p.notes && (
+                <p style={{ marginTop: "8px" }}>
+                  📝 {p.notes}
+                </p>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
     </div>
   );
 }
-
-// =========================
-// STYLES
-// =========================
-const styles = {
-  container: {
-    background: "#fff",
-    padding: "20px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-    maxWidth: "700px"
-  },
-
-  title: {
-    marginBottom: "15px"
-  },
-
-  input: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc"
-  },
-
-  textarea: {
-    width: "100%",
-    height: "120px",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    resize: "none"
-  },
-
-  textareaSmall: {
-    width: "100%",
-    height: "80px",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    resize: "none"
-  },
-
-  btn: {
-    background: "#2563eb",
-    color: "#fff",
-    padding: "10px 15px",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer"
-  },
-
-  btnSecondary: {
-    background: "#16a34a",
-    color: "#fff",
-    padding: "10px 15px",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer"
-  },
-
-  table: {
-    width: "100%",
-    borderCollapse: "collapse"
-  }
-};

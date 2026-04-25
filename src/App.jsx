@@ -1,20 +1,18 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "./components/Login";
 import Register from "./components/Register";
-import Dashboard from "./components/Dashboard";
-import PatientView from "./components/PatientView";
+import MainLayout from "./components/MainLayout";
 
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/doctor" element={<Dashboard />} />
-        <Route path="/patient" element={<PatientView />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" />} />
+
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      <Route path="/app/*" element={<MainLayout />} />
+    </Routes>
   );
 }
-
-export default App;

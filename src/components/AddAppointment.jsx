@@ -1,18 +1,16 @@
-import React from "react";
 import { useEffect, useState } from "react";
-import { getPatients, addAppointment } from "../api";
+import { getPatients, addAppointment } from "../api/api";
 
 export default function AddAppointment() {
   const [patients, setPatients] = useState([]);
 
   const [form, setForm] = useState({
     patient_id: "",
-    date: ""
+    date: "",
   });
 
   const doctorId = localStorage.getItem("userId");
 
-  // Load patients from backend
   useEffect(() => {
     loadPatients();
   }, []);
@@ -20,45 +18,37 @@ export default function AddAppointment() {
   const loadPatients = async () => {
     try {
       const data = await getPatients();
-      setPatients(data);
+      console.log("PATIENTS:", data);
+      setPatients(Array.isArray(data) ? data : []);
     } catch (err) {
+      console.log(err);
       alert("Error loading patients");
     }
   };
 
-  // Submit appointment
   const submitAppointment = async () => {
-    console.log("FORM:", form); // DEBUG
-
-    if (!form.patient_id) {
-      alert("Please select a patient");
-      return;
-    }
-
-    if (!form.date) {
-      alert("Please select date and time");
+    if (!form.patient_id || !form.date) {
+      alert("Select patient and date");
       return;
     }
 
     const payload = {
       patient_id: Number(form.patient_id),
       doctor_id: Number(doctorId),
-      date: new Date(form.date).toISOString()
+      date: new Date(form.date).toISOString(),
     };
 
-    const res = await addAppointment(payload);
+    try {
+      const res = await addAppointment(payload);
+      console.log("APPOINTMENT:", res);
 
-    if (!res.ok) {
+      alert("Appointment created");
+
+      setForm({ patient_id: "", date: "" });
+    } catch (err) {
+      console.log(err);
       alert("Failed to create appointment");
-      return;
     }
-
-    alert("Appointment created successfully!");
-
-    setForm({
-      patient_id: "",
-      date: ""
-    });
   };
 
   return (
@@ -76,14 +66,14 @@ export default function AddAppointment() {
 
         {patients.map((p) => (
           <option key={p.id} value={p.id}>
-            {p.name} - {p.phone}
+            {p.name} - {p.phone} (ID: {p.id})
           </option>
         ))}
       </select>
 
       <br /><br />
 
-      {/* DATE PICKER */}
+      {/* DATE */}
       <input
         type="datetime-local"
         value={form.date}
