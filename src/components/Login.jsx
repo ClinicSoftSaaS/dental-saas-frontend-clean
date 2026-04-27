@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -7,6 +8,8 @@ export default function Login({ setPage }) {
     username: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
@@ -30,12 +33,12 @@ export default function Login({ setPage }) {
       }
 
       // =========================
-      // SAFE USER PARSING (NO BACKEND CHANGE NEEDED)
+      // SAFE USER PARSING
       // =========================
       const user =
-        data?.user ||   // if backend returns {user: {...}}
-        data?.data ||   // fallback structure
-        data;           // direct user object
+        data?.user ||
+        data?.data ||
+        data;
 
       if (!user || (!user.id && !user.user_id)) {
         alert("Login error: invalid user data received");
@@ -43,26 +46,27 @@ export default function Login({ setPage }) {
         return;
       }
 
-      // normalize user object
       const cleanUser = {
         id: user.id || user.user_id,
         username: user.username,
         role: user.role || "doctor",
       };
 
-      // store safely
       localStorage.setItem("user", JSON.stringify(cleanUser));
 
       console.log("CLEAN USER STORED:", cleanUser);
 
       alert("Login successful");
 
-      // navigation
+      // =========================
+      // FIXED NAVIGATION (IMPORTANT)
+      // =========================
       if (setPage) {
         setPage("dashboard");
-      } else {
-        window.location.href = "/app";
       }
+
+      // always navigate to app
+      navigate("/app");
 
     } catch (err) {
       console.error("LOGIN ERROR:", err);
@@ -137,7 +141,7 @@ export default function Login({ setPage }) {
 
         <p style={{ textAlign: "center", marginTop: "10px" }}>
           Don't have an account?{" "}
-          <button onClick={() => window.location.href = "/register"}>
+          <button onClick={() => navigate("/register")}>
             Register
           </button>
         </p>
